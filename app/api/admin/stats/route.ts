@@ -3,8 +3,26 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
+    // Check if we're in build mode or if database is not available
+    if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+      return NextResponse.json({
+        stats: {
+          totalUsers: 0,
+          totalOrders: 0,
+          totalRevenue: 0,
+          pendingOrders: 0,
+          activeUsers: 0,
+          completedOrders: 0
+        },
+        recentActivity: []
+      })
+    }
+
     const session = await getServerSession(authOptions)
     
     if (!session) {
@@ -15,7 +33,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: "Forbidden" }, { status: 403 })
     }
 
-    // Get all stats
+    // Get all stats with error handling for each query
     const [
       totalUsers,
       totalOrders,
@@ -23,7 +41,7 @@ export async function GET(request: NextRequest) {
       pendingOrders,
       activeUsers,
       completedOrders
-    ] = await Promise.all([
+    ] = await Promise.allSettled([
       prisma.user.count(),
       prisma.order.count(),
       prisma.order.aggregate({
@@ -45,33 +63,53 @@ export async function GET(request: NextRequest) {
       })
     ])
 
-    // Get recent activity (simplified for MVP)
-    const recentOrders = await prisma.order.findMany({
-      take: 10,
-      orderBy: { createdAt: "desc" },
-      include: {
-        user: {
-          select: { name: true }
-        }
-      }
-    })
+    // Handle potential failures in database queries
+    const safeTotalUsers = totalUsers.status === 'fulfilled' ? totalUsers.value : 0
+    const safeTotalOrders = totalOrders.status === 'fulfilled' ? totalOrders.value : 0
+    const safeTotalRevenue = totalRevenue.status === 'fulfilled' ? (totalRevenue.value._sum.totalAmount || 0) : 0
+    const safePendingOrders = pendingOrders.status === 'fulfilled' ? pendingOrders.value : 0
+    const safeActiveUsers = activeUsers.status === 'fulfilled' ? activeUsers.value : 0
+    const safeCompletedOrders = completedOrders.status === 'fulfilled' ? completedOrders.value : 0
 
-    const recentActivity = recentOrders.map(order => ({
-      id: order.id,
-      type: "order",
-      description: `New order created by ${order.user.name}`,
-      timestamp: order.createdAt.toISOString(),
-      user: order.user.name || "Unknown"
-    }))
+    // Get recent activity with error handling
+    let recentActivity: Array<{
+      id: string
+      type: string
+      description: string
+      timestamp: string
+      user: string
+    }> = []
+    try {
+      const recentOrders = await prisma.order.findMany({
+        take: 10,
+        orderBy: { createdAt: "desc" },
+        include: {
+          user: {
+            select: { name: true }
+          }
+        }
+      })
+
+      recentActivity = recentOrders.map(order => ({
+        id: order.id,
+        type: "order",
+        description: `New order created by ${order.user.name}`,
+        timestamp: order.createdAt.toISOString(),
+        user: order.user.name || "Unknown"
+      }))
+    } catch (recentError) {
+      console.error("Error fetching recent activity:", recentError)
+      recentActivity = []
+    }
 
     return NextResponse.json({
       stats: {
-        totalUsers,
-        totalOrders,
-        totalRevenue: totalRevenue._sum.totalAmount || 0,
-        pendingOrders,
-        activeUsers,
-        completedOrders
+        totalUsers: safeTotalUsers,
+        totalOrders: safeTotalOrders,
+        totalRevenue: safeTotalRevenue,
+        pendingOrders: safePendingOrders,
+        activeUsers: safeActiveUsers,
+        completedOrders: safeCompletedOrders
       },
       recentActivity
     })
