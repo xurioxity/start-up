@@ -8,7 +8,7 @@ import { AuthProvider } from "@/components/auth-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Vivelith - 3D Printing Marketplace",
+  title: "Aavi 3D - 3D Printing Marketplace",
   description: "On-demand 3D printing services for MSMEs. Upload your STL files and get custom products manufactured.",
 }
 

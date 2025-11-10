@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    // Find the manufacturer user - now there's only one (Vivelith)
+    // Find the manufacturer user - now there's only one (Aavi 3D)
     const { content, orderId, receiverId } = await request.json()
     
     if (!content) {
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
         where: { id: receiverId }
       })
     } else {
-      // Find the only manufacturer (Vivelith)
+      // Find the only manufacturer (Aavi 3D)
       manufacturer = await prisma.user.findFirst({
         where: {
           role: 'MANUFACTURER'

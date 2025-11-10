@@ -98,7 +98,7 @@ export default function EcommercePage() {
     {
       icon: <Store className="w-6 h-6" />,
       title: "Connect Your Store",
-      description: "Link your Vivelith account with e-commerce platforms",
+      description: "Link your Aavi 3D account with e-commerce platforms",
       status: "coming-soon"
     },
     {

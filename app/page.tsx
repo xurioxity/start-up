@@ -177,7 +177,7 @@ export default function LandingPage() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Why Choose Vivelith?
+              Why Choose Aavi 3D?
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               We make 3D printing accessible, affordable, and efficient for businesses of all sizes.
@@ -264,7 +264,7 @@ export default function LandingPage() {
               Ready to Start Your 3D Printing Journey?
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Join hundreds of businesses already using Vivelith to bring their ideas to life.
+              Join hundreds of businesses already using Aavi 3D to bring their ideas to life.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/auth/signup">

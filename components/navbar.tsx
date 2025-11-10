@@ -54,9 +54,9 @@ export function Navbar() {
           <div className="flex items-center">
             <Link href={session && session.user ? (session.user.role === "MANUFACTURER" ? "/mfg/dashboard" : "/dashboard") : "/"} className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">V</span>
+                <span className="text-white font-bold text-sm">A</span>
               </div>
-              <span className="text-xl font-bold gradient-text">Vivelith</span>
+              <span className="text-xl font-bold gradient-text">Aavi 3D</span>
             </Link>
           </div>
 
